@@ -1,0 +1,30 @@
+They go 
+yearmonth-divvy-tripdata
+202001-divvy-tripdata = year: 2020 month: january or 01
+
+Data Project Log:
+Guiding Question - How to convert the casual user to memberships?
+
+Cyclistic's data comes from the internal data from Motivate International Inc for public data
+THis data should be quite reliable since it is highly unlikely that Motivate International Inc 
+would sabatage its own data, and could reduce the confidence of the stakeholders.
+ - the data will be downloaded through each zip file in a month to month package
+	- 14 months of data will be downloaded for the purposes of this project
+ - to verify the data that is possible there shouldn't be large changes in the longitude and latitude from end to end
+   both of which should fall within the Chicago city area.
+
+- to address the inconsistencies of the data such at a missing endpoint with longitude and latitude then these points will
+be removed. There is no feasible method to collect the missing data, and after the preliminary veiwing the data
+this section does not compose of a significant portion of the data. Therefore there should be a minimal impact towards the
+end result after removing these entries.  
+
+Sampling must be taken given that the datasets for each month are too large and even entering them into the R markdown
+would take a significant amount of time with possibility of crashing.
+
+As for the sampling size taken I have decided to take an arbitary 10000 entries from each month from a randomized list of the data
+to randomize the data a RAND() function was called for each row element of the csv. THen the random column was sorted smallest to largest
+Afterward that column is remove to preserve the value of the dataset.
+
+While attempting to sort from smallest to largest of the random values I believe the sorting algorithm of the spreadsheet broke.
+It kinda just rearranged the rows of the file to be anywhere, and honestly that result might be better given the purpose of
+creating a sample.

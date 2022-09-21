@@ -1,0 +1,231 @@
+---
+title: "Google Capstone"
+author: "Marcus Chan"
+date: "2022-08-31"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(ggplot2)
+```
+
+## Trip Data Cycling
+
+First we load the correct directory for this file
+```{r set_work_dir}
+#setwd("E:/Data_Project_Case_Study_attempt2/Sum_Folder/CSV/")
+```
+
+
+First we load the data into this R markdown
+We load a random sample of the hundreds of thousands of row entry points in to the program.
+```{r load_data}
+
+apr20 <- read.csv("F:/Data_Project_Case_Study_attempt2/Sum_Folder/CSV/04april-2020.csv", header =TRUE, nrows=10000)
+may20 <- read.csv("F:/Data_Project_Case_Study_attempt2/Sum_Folder/CSV/05may-2020.csv", header =TRUE, nrows=10000)
+jun20 <- read.csv("F:/Data_Project_Case_Study_attempt2/Sum_Folder/CSV/06june-2020.csv", header =TRUE, nrows=10000)
+jul20 <- read.csv("F:/Data_Project_Case_Study_attempt2/Sum_Folder/CSV/07july-2020.csv", header =TRUE, nrows=10000)
+aug20 <- read.csv("F:/Data_Project_Case_Study_attempt2/Sum_Folder/CSV/08august-2020.csv", header =TRUE, nrows=10000)
+sep20 <- read.csv("F:/Data_Project_Case_Study_attempt2/Sum_Folder/CSV/09september-2020.csv", header =TRUE, nrows=10000)
+oct20 <- read.csv("F:/Data_Project_Case_Study_attempt2/Sum_Folder/CSV/10october-2020.csv", header =TRUE, nrows=10000)
+nov20 <- read.csv("F:/Data_Project_Case_Study_attempt2/Sum_Folder/CSV/11november-2020.csv", header =TRUE, nrows=10000)
+dec20 <- read.csv("F:/Data_Project_Case_Study_attempt2/Sum_Folder/CSV/12december-2020.csv", header =TRUE, nrows=10000)
+jan21 <- read.csv("F:/Data_Project_Case_Study_attempt2/Sum_Folder/CSV/01january-2021.csv", header =TRUE, nrows=10000)
+feb21 <- read.csv("F:/Data_Project_Case_Study_attempt2/Sum_Folder/CSV/02febuary-2021.csv", header =TRUE, nrows=10000)
+mar21 <- read.csv("F:/Data_Project_Case_Study_attempt2/Sum_Folder/CSV/03march-2021.csv", header =TRUE, nrows=10000)
+apr21 <- read.csv("F:/Data_Project_Case_Study_attempt2/Sum_Folder/CSV/04april-2021.csv", header =TRUE, nrows=10000)
+may21 <- read.csv("F:/Data_Project_Case_Study_attempt2/Sum_Folder/CSV/05may-2021.csv", header =TRUE, nrows=10000)
+jun21 <- read.csv("F:/Data_Project_Case_Study_attempt2/Sum_Folder/CSV/06june-2021.csv", header =TRUE, nrows=10000)
+
+```
+
+We bind all of the data files together to run through just a single dataframe instead of multiple
+due to the limitations of rbind we repeat the process of the rbind multiple times
+```{r binding}
+total <- rbind(apr20, may20, jun20)
+total <- rbind(total, jul20, aug20)
+total <- rbind(total, sep20, oct20)
+total <- rbind(total, nov20, dec20)
+total <- rbind(total, jan21, feb21)
+total <- rbind(total, mar21, apr21)
+#common <- Reduce(intersect, list(total, may21, jun21))
+#total <- rbind(total[common], may21[common], jun21[common])
+```
+
+
+
+Then we filter the data into the distinct categories that are of interest
+```{r filtering into member and casual catagories}
+mem_total = filter(total, member_casual == "member")
+cas_total = filter(total, member_casual == "casual")
+
+write.csv(mem_total, "F:\\Data_Project_Case_Study_attempt2\\member_users.csv")
+write.csv(cas_total, "F:\\Data_Project_Case_Study_attempt2\\casual_users.csv")
+```
+
+Now we take a look at what kinds of bikes the members use and what number.
+```{r member bike usages}
+cla_mem <- nrow(filter(mem_total, rideable_type == "classic_bike"))
+dock_mem <- nrow(filter(mem_total, rideable_type == "docked_bike"))
+
+ele_mem <- nrow(filter(mem_total, rideable_type == "electric_bike"))
+
+total_mem_pie = data.frame(
+  group = c("Docked bikes", "Classic bike", "Electric_bike"),
+  value = c(dock_mem, cla_mem, ele_mem)
+)
+bp <- ggplot(total_mem_pie, aes(x="", y=value, fill=group)) + geom_bar(width = 1, stat = "identity")
+pie <- bp + coord_polar("y", start=0)
+pie
+```
+```{r casual bike usages}
+cla_mem <- nrow(filter(cas_total, rideable_type == "classic_bike"))
+dock_mem <- nrow(filter(cas_total, rideable_type == "docked_bike"))
+ele_mem <- nrow(filter(cas_total, rideable_type == "electric_bike"))
+
+total_cas_pie = data.frame(
+  group = c("Docked bikes", "Classic bike", "Electric_bike"),
+  value = c(dock_mem, cla_mem, ele_mem)
+)
+bp <- ggplot(total_cas_pie, aes(x="", y=value, fill=group)) + geom_bar(width = 1, stat = "identity")
+pie <- bp + coord_polar("y", start=0)
+pie
+```
+Then we take the distribution of usage around the bikes in both cases
+Group the numeric data into dataframes before using colMean to calculate the means:
+
+
+```{r mean_var members}
+# calculate the mean
+mean(mem_total$start_lat)
+mean(mem_total$start_lng)
+mean(mem_total$end_lat)
+mean(mem_total$end_lng)
+# calculate the standard deviation
+sd(mem_total$start_lat)
+sd(mem_total$start_lng)
+sd(mem_total$end_lat)
+sd(mem_total$end_lng)
+```
+```{r mean_var casual}
+# calculate the mean
+mean(cas_total$start_lat)
+mean(cas_total$start_lng)
+mean(cas_total$end_lat)
+mean(cas_total$end_lng)
+# calculate the standard deviation
+sd(cas_total$start_lat)
+sd(cas_total$start_lng)
+sd(cas_total$end_lat)
+sd(cas_total$end_lng)
+```
+```{r daily usage}
+#str(mem_total)
+# now attempting to convert char to datetime notation (POSTiX)
+member_time_started <- as.POSIXct(mem_total$started_at,format="%Y-%m-%d %H:%M")
+member_time_ended <- as.POSIXct(mem_total$ended_at,format="%Y-%m-%d %H:%M")
+acum_date_mem_start <- format(member_time_started, "%H:%M") 
+acum_date_mem_end <- format(member_time_ended, "%H:%M")
+# now we have to count the number of repetitions of time
+# if that doesn't work use:
+# round(x,"hours") as well
+
+# we now have to do the same for the casual users
+casual_time_started <- as.POSIXct(cas_total$started_at,format="%Y-%m-%d %H:%M")
+casual_time_ended <- as.POSIXct(cas_total$ended_at,format="%Y-%m-%d %H:%M")
+acum_date_cas_start <- format(casual_time_started, "%H:%M") 
+acum_date_cas_end <- format(casual_time_ended, "%H:%M")
+
+```
+
+
+```{r daily_usage members}
+rm(overall_end, overall_start)
+mem_unique_start <- unique(acum_date_mem_start)
+mem_unique_end <- unique(acum_date_mem_end)
+
+bool <- FALSE
+for(time_end in mem_unique_end)
+{
+  sum_end <- sum(acum_date_mem_end == time_end)
+  temp <- cbind(time_end, sum_end)
+  
+  if(bool == FALSE){
+    overall_end <- temp
+    bool = TRUE
+  } else {
+    overall_end <- rbind(overall_end , temp)
+  }
+}
+
+bool <- FALSE
+for(time_start in mem_unique_start)
+{
+  sum_start <- sum(acum_date_mem_start == time_start)
+  temp <- cbind(time_start, sum_start)
+  
+  if(bool == FALSE){
+    overall_start <- temp
+    bool = TRUE
+  } else {
+    overall_start <- rbind(overall_start , temp)
+  }
+}
+
+# finally have the dataframe I want now I need to sort it based on the time
+
+```
+
+Now repeat the data for the casual users
+
+```{r daily_usage casual}
+# we repeat the same actions as before for members onto the casual users
+
+rm(cas_overall_end, cas_overall_start)
+cas_unique_start <- unique(acum_date_cas_start)
+cas_unique_end <- unique(acum_date_cas_end)
+
+bool <- FALSE
+for(time_end in cas_unique_end)
+{
+  sum_end <- sum(acum_date_cas_end == time_end)
+  temp <- cbind(time_end, sum_end)
+  
+  if(bool == FALSE){
+    cas_overall_end <- temp
+    bool = TRUE
+  } else {
+    cas_overall_end <- rbind(cas_overall_end , temp)
+  }
+}
+
+bool <- FALSE
+for(time_start in cas_unique_start)
+{
+  sum_start <- sum(acum_date_mem_start == time_start)
+  temp <- cbind(time_start, sum_start)
+  
+  if(bool == FALSE){
+    cas_overall_start <- temp
+    bool = TRUE
+  } else {
+    cas_overall_start <- rbind(cas_overall_start , temp)
+  }
+}
+
+
+```
+Now we plot the results
+```{r export}
+# don't really know how to process the data into the graph within R so we transfer it into excel
+write.csv(overall_start, "F:\\Data_Project_Case_Study_attempt2\\mem_overall_start.csv")
+write.csv(overall_end, "F:\\Data_Project_Case_Study_attempt2\\mem_overall_end.csv")
+write.csv(cas_overall_start, "F:\\Data_Project_Case_Study_attempt2\\cas_overall_start.csv")
+write.csv(cas_overall_end, "F:\\Data_Project_Case_Study_attempt2\\cas_overall_end.csv")
+
+```
+
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
